@@ -50,7 +50,7 @@ Create a .env file at the root of the project and define:
 
 ### CORS Configuration
 I configured CORS in main.ts with the following settings:
-   ```app.enableCors({`
+   `app.enableCors({`
       `origin: '*',`
       `methods: 'GET,POST',`
       `allowedHeaders: 'Content-Type,Authorization',`
