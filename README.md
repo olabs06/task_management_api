@@ -43,7 +43,7 @@ I created a .env file in the project root (task_management_api/.env) with the fo
   `npx tsc`
   `npx eslint src --ext .ts --fix`
 
-Create a .env file at the root of the project and define:
+**Create a .env file at the root of the project and define:**
 `PORT=3000`
 `MONGODB_URI=mongodb://localhost:27017/task_mgt`
 `JWT_SECRET=yourSuperSecretKey`
