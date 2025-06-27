@@ -1,27 +1,31 @@
 import { NestFactory } from '@nestjs/core';
-import { TasksModule } from './tasks/tasks.module';
+import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(TasksModule);
-  
-  // Enable CORS for development
+  const app = await NestFactory.create(AppModule);
+
   app.enableCors({
     origin: '*',
     methods: 'GET,POST',
     allowedHeaders: 'Content-Type,Authorization',
   });
 
-  // Enable global validation
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    })
+  );
 
-    await app.listen(3000);
-    logger.log(`Application is running on: ${await app.getUrl()}`);
-  }
-bootstrap();
+  await app.listen(3000);
+  logger.log(`Application is running on: ${await app.getUrl()}`);
+}
+
+bootstrap().catch((err: Error) => {
+  const logger = new Logger('Bootstrap');
+  logger.error(`Application failed to start: ${err.message}`);
+});

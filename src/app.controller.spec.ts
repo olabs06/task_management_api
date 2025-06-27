@@ -1,22 +1,28 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from './tasks/tasks.controller';
-import { AppService } from './tasks/tasks.service';
+import { TasksController } from './tasks/tasks.controller';
+import { TasksService } from './tasks/tasks.service';
+import { getModelToken } from '@nestjs/mongoose';
+import { Task } from './tasks/schemas/task.schema';
 
-describe('AppController', () => {
-  let appController: AppController;
+describe('TasksController', () => {
+  let controller: TasksController;
 
   beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [TasksController],
+      providers: [
+        TasksService,
+        {
+          provide: getModelToken(Task.name),
+          useValue: {}, // Mock the Mongoose model
+        },
+      ],
     }).compile();
 
-    appController = app.get<AppController>(AppController);
+    controller = module.get<TasksController>(TasksController);
+    controller = module.get<TasksController>(TasksController);
   });
-
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
-    });
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
   });
 });

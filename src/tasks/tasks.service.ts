@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Task, TaskDocument } from './schemas/task.schema';
@@ -7,17 +7,24 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class TasksService {
-  constructor(@InjectModel(Task.name) private taskModel: Model<TaskDocument>) {}
+  private readonly logger = new Logger(TasksService.name);
+
+  constructor(@InjectModel(Task.name) private taskModel: Model<TaskDocument>) {
+    this.logger.log('TaskService initialized with TaskModel');
+    this.logger.debug(
+      `TaskModel name: ${this.taskModel ? this.taskModel.modelName : 'undefined'}`
+    );
+  }
 
   async create(createTaskDto: CreateTaskDto): Promise<Task> {
     const { title, description } = createTaskDto;
-    
+
     if (!title || typeof title !== 'string' || title.trim() === '') {
       throw new BadRequestException(
-        'Title is required and must be a non-empty string',
+        'Title is required and must be a non-empty string'
       );
     }
-    
+
     if (description && typeof description !== 'string') {
       throw new BadRequestException('Description must be a string if provided');
     }
@@ -29,10 +36,12 @@ export class TasksService {
       createdAt: new Date(),
     });
 
+    this.logger.log(`Creating task: ${title}`);
     return task.save();
   }
 
   async findAll(): Promise<Task[]> {
+    this.logger.log('Fetching all tasks');
     return this.taskModel.find().exec();
   }
 
@@ -40,6 +49,7 @@ export class TasksService {
     if (!id || typeof id !== 'string') {
       throw new BadRequestException('Valid ID is required');
     }
+    this.logger.log(`Fetching task with ID: ${id}`);
     return this.taskModel.findOne({ id }).exec();
   }
 }

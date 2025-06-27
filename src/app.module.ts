@@ -1,8 +1,9 @@
 import { Module, Logger } from '@nestjs/common';
-import { MongooseModule, MongooseModuleOptions } from '@nestjs/mongoose';
+import { MongooseModule } from '@nestjs/mongoose';
 import { TasksModule } from './tasks/tasks.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Connection } from 'mongoose';
 
 @Module({
   imports: [
@@ -12,23 +13,28 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        const logger = new Logger('Mongoose');
+      useFactory: (configService: ConfigService) => {
         const uri = configService.get<string>('MONGODB_URI');
         if (!uri) {
-          logger.error('MONGODB_URI is not defined in environment variables');
-          throw new Error('MONGODB_URI is not defined');
+          throw new Error('MONGODB_URI not found in .env file');
         }
-        logger.log(`Connecting to MongoDB at ${uri.replace(/:([^@]+)@/, ':****@')}`);
         return {
           uri,
-          connectionFactory: (connection) => {
-            connection.on('connected', () => logger.log('MongoDB connected successfully'));
-            connection.on('error', (err) => logger.error(`MongoDB connection error: ${err}`));
-            connection.on('disconnected', () => logger.warn('MongoDB disconnected'));
+          connectionFactory: (connection: Connection) => {
+            const logger = new Logger('Mongoose');
+            logger.log(`MongoDB connection state: ${connection.readyState}`);
+            connection.on('connected', () =>
+              logger.log('MongoDB connected successfully')
+            );
+            connection.on('error', (err) =>
+              logger.error(`MongoDB connection error: ${err}`)
+            );
+            connection.on('disconnected', () =>
+              logger.warn('MongoDB disconnected')
+            );
             return connection;
           },
-        } as MongooseModuleOptions;
+        };
       },
       inject: [ConfigService],
     }),
@@ -36,4 +42,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     AuthModule,
   ],
 })
-export class AppModule {}
+export class AppModule {
+  private readonly logger = new Logger(AppModule.name);
+
+  constructor() {
+    this.logger.log('AppModule initialized');
+  }
+}
